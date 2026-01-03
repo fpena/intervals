@@ -161,23 +161,6 @@ enum IntervalPlayMode {
 // MARK: - Interval Semitones
 
 extension IntervalType {
-    var semitones: Int {
-        switch self {
-        case .minorSecond: return 1
-        case .majorSecond: return 2
-        case .minorThird: return 3
-        case .majorThird: return 4
-        case .perfectFourth: return 5
-        case .tritone: return 6
-        case .perfectFifth: return 7
-        case .minorSixth: return 8
-        case .majorSixth: return 9
-        case .minorSeventh: return 10
-        case .majorSeventh: return 11
-        case .octave: return 12
-        }
-    }
-
     static func fromSemitones(_ semitones: Int) -> IntervalType? {
         allCases.first { $0.semitones == semitones }
     }

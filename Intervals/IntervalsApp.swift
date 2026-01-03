@@ -12,9 +12,18 @@ import SwiftData
 struct IntervalsApp: App {
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
-            Item.self,
+            UserProfile.self,
+            ExerciseAttempt.self,
+            ExerciseStats.self,
+            DailyProgress.self,
+            UnlockedAchievement.self,
+            Subscription.self,
         ])
-        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
+        let modelConfiguration = ModelConfiguration(
+            schema: schema,
+            isStoredInMemoryOnly: false,
+            allowsSave: true
+        )
 
         do {
             return try ModelContainer(for: schema, configurations: [modelConfiguration])

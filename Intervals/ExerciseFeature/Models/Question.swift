@@ -34,11 +34,11 @@ struct Question: Identifiable {
     ) {
         self.id = id
         self.type = .intervals
-        self.correctAnswer = intervalType.rawValue
+        self.correctAnswer = intervalType.displayName
         self.intervalType = intervalType
 
-        var answers = distractors.map { $0.rawValue }
-        answers.append(intervalType.rawValue)
+        var answers = distractors.map { $0.displayName }
+        answers.append(intervalType.displayName)
         self.allAnswers = answers.shuffled()
     }
 }
