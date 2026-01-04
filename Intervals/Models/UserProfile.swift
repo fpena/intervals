@@ -14,6 +14,21 @@ final class UserProfile {
     var avatarId: String  // References avatar asset name
     var dateOfBirth: Date?  // Optional, for age-appropriate content
 
+    // MARK: - Onboarding
+    var ageGroupRaw: String?  // AgeGroup raw value
+    var instrumentsRaw: [String]  // OnboardingInstrument raw values
+    var primaryInstrumentRaw: String?  // OnboardingInstrument raw value
+    var goalRaw: String?  // LearningGoal raw value
+    var setupCompletedAt: Date?
+    var setupFlowRaw: String?  // SetupFlow raw value
+    var placementTestTaken: Bool
+    var placementTestScore: Double?
+
+    // MARK: - Reminder Settings
+    var reminderEnabled: Bool
+    var reminderTime: Date?
+    var reminderDaysRaw: [Int]  // Weekday raw values
+
     // MARK: - Progress
     var currentGrade: Grade
     var totalXP: Int  // Gamification points
@@ -49,7 +64,7 @@ final class UserProfile {
 
     // MARK: - Initialization
     init(
-        name: String,
+        name: String = OnboardingDefaults.name,
         avatarId: String = "default_avatar",
         dateOfBirth: Date? = nil,
         currentGrade: Grade = .initial
@@ -70,6 +85,32 @@ final class UserProfile {
         self.dailyGoalMinutes = 10
         self.createdAt = Date()
         self.updatedAt = Date()
+
+        // Onboarding defaults
+        self.ageGroupRaw = nil
+        self.instrumentsRaw = []
+        self.primaryInstrumentRaw = nil
+        self.goalRaw = nil
+        self.setupCompletedAt = nil
+        self.setupFlowRaw = nil
+        self.placementTestTaken = false
+        self.placementTestScore = nil
+        self.reminderEnabled = false
+        self.reminderTime = nil
+        self.reminderDaysRaw = []
+    }
+
+    /// Create with onboarding defaults applied
+    static func withDefaults() -> UserProfile {
+        let profile = UserProfile()
+        profile.name = OnboardingDefaults.name
+        profile.ageGroup = OnboardingDefaults.ageGroup
+        profile.instruments = [OnboardingDefaults.instrument]
+        profile.primaryInstrument = OnboardingDefaults.instrument
+        profile.goal = OnboardingDefaults.goal
+        profile.currentGrade = OnboardingDefaults.grade.toGrade
+        profile.reminderEnabled = OnboardingDefaults.reminderEnabled
+        return profile
     }
 
     // MARK: - Computed Properties
@@ -81,5 +122,77 @@ final class UserProfile {
     var isChild: Bool {
         guard let age = age else { return true }  // Default to child-safe
         return age < 13
+    }
+
+    // MARK: - Onboarding Computed Properties
+
+    var ageGroup: AgeGroup? {
+        get {
+            guard let raw = ageGroupRaw else { return nil }
+            return AgeGroup(rawValue: raw)
+        }
+        set { ageGroupRaw = newValue?.rawValue }
+    }
+
+    var instruments: [OnboardingInstrument] {
+        get { instrumentsRaw.compactMap { OnboardingInstrument(rawValue: $0) } }
+        set { instrumentsRaw = newValue.map { $0.rawValue } }
+    }
+
+    var primaryInstrument: OnboardingInstrument? {
+        get {
+            guard let raw = primaryInstrumentRaw else { return nil }
+            return OnboardingInstrument(rawValue: raw)
+        }
+        set { primaryInstrumentRaw = newValue?.rawValue }
+    }
+
+    var goal: LearningGoal? {
+        get {
+            guard let raw = goalRaw else { return nil }
+            return LearningGoal(rawValue: raw)
+        }
+        set { goalRaw = newValue?.rawValue }
+    }
+
+    var setupFlow: SetupFlow? {
+        get {
+            guard let raw = setupFlowRaw else { return nil }
+            return SetupFlow(rawValue: raw)
+        }
+        set { setupFlowRaw = newValue?.rawValue }
+    }
+
+    var reminderDays: [Weekday] {
+        get { reminderDaysRaw.compactMap { Weekday(rawValue: $0) } }
+        set { reminderDaysRaw = newValue.map { $0.rawValue } }
+    }
+
+    var isSetupComplete: Bool {
+        setupCompletedAt != nil
+    }
+
+    var displayName: String {
+        name.isEmpty ? OnboardingDefaults.name : name
+    }
+
+    // MARK: - Onboarding Methods
+
+    func completeOnboarding() {
+        setupCompletedAt = Date()
+        updatedAt = Date()
+    }
+
+    func skipOnboarding() {
+        // Apply defaults when skipping
+        name = OnboardingDefaults.name
+        ageGroup = OnboardingDefaults.ageGroup
+        instruments = [OnboardingDefaults.instrument]
+        primaryInstrument = OnboardingDefaults.instrument
+        goal = OnboardingDefaults.goal
+        currentGrade = OnboardingDefaults.grade.toGrade
+        reminderEnabled = OnboardingDefaults.reminderEnabled
+        setupCompletedAt = Date()
+        updatedAt = Date()
     }
 }

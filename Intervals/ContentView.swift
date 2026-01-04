@@ -6,8 +6,23 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct ContentView: View {
+    @Environment(\.modelContext) private var modelContext
+    @Query private var users: [UserProfile]
+    @State private var showSettings = false
+
+    private var currentUser: UserProfile {
+        if let user = users.first {
+            return user
+        } else {
+            let newUser = UserProfile(name: "Player")
+            modelContext.insert(newUser)
+            return newUser
+        }
+    }
+
     var body: some View {
         NavigationStack {
             VStack(spacing: 32) {
@@ -52,6 +67,20 @@ struct ContentView: View {
             .padding(.horizontal, 48)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(Color(.systemGroupedBackground))
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        showSettings = true
+                    } label: {
+                        Image(systemName: "gearshape.fill")
+                            .font(.title2)
+                            .foregroundStyle(Color.appPrimary)
+                    }
+                }
+            }
+            .sheet(isPresented: $showSettings) {
+                SettingsView(user: currentUser)
+            }
         }
     }
 }

@@ -28,6 +28,9 @@ final class ExerciseStats {
     var easeFactor: Double  // SM-2 algorithm: starts at 2.5
     var intervalDays: Int   // Days until next review
     var nextReviewDate: Date?
+    var consecutiveCorrect: Int  // Streak of correct answers
+    var lapseCount: Int  // Times fallen from mastered/reviewing to learning
+    var itemStateRaw: String  // ItemState raw value for persistence
 
     // MARK: - Relationship
     var user: UserProfile?
@@ -49,6 +52,15 @@ final class ExerciseStats {
         self.easeFactor = 2.5
         self.intervalDays = 1
         self.nextReviewDate = nil
+        self.consecutiveCorrect = 0
+        self.lapseCount = 0
+        self.itemStateRaw = ItemState.new.rawValue
+    }
+
+    // MARK: - Item State
+    var itemState: ItemState {
+        get { ItemState(rawValue: itemStateRaw) ?? .new }
+        set { itemStateRaw = newValue.rawValue }
     }
 
     // MARK: - Computed Properties
