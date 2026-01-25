@@ -55,10 +55,12 @@ final class AudioManager: ObservableObject {
     /// Play an interval using AudioKit tone generation
     /// - Parameters:
     ///   - semitones: Number of semitones for the interval
+    ///   - rootNote: Optional MIDI note for consistent playback
     ///   - playMode: How to play (harmonic, melodic ascending, melodic descending)
     ///   - completion: Called when playback completes
     func playInterval(
         semitones: Int,
+        rootNote: Int? = nil,
         playMode: IntervalPlayMode = .melodic,
         completion: (() -> Void)? = nil
     ) {
@@ -67,7 +69,7 @@ final class AudioManager: ObservableObject {
         isPlaying = true
         playbackCompletion = completion
 
-        currentEngine.playInterval(semitones: semitones, playMode: playMode) { [weak self] in
+        currentEngine.playInterval(semitones: semitones, rootNote: rootNote, playMode: playMode) { [weak self] in
             Task { @MainActor in
                 self?.isPlaying = false
                 self?.playbackCompletion?()
@@ -78,10 +80,11 @@ final class AudioManager: ObservableObject {
     /// Play an interval from an IntervalType
     func playInterval(
         _ intervalType: IntervalType,
+        rootNote: Int? = nil,
         playMode: IntervalPlayMode = .melodic,
         completion: (() -> Void)? = nil
     ) {
-        playInterval(semitones: intervalType.semitones, playMode: playMode, completion: completion)
+        playInterval(semitones: intervalType.semitones, rootNote: rootNote, playMode: playMode, completion: completion)
     }
 
     /// Legacy method for file-based playback (kept for compatibility)

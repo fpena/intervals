@@ -30,6 +30,12 @@ struct ExerciseView: View {
         }
         .persistentSystemOverlays(.hidden)
         .navigationBarTitleDisplayMode(.inline)
+        .onAppear {
+            // Reset if returning after completing a session
+            if viewModel.isSessionComplete {
+                viewModel.restartSession()
+            }
+        }
         .toolbar {
             ToolbarItem(placement: .principal) {
                 HStack(spacing: 16) {

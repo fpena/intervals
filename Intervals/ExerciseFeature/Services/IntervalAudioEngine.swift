@@ -44,10 +44,12 @@ final class IntervalAudioEngine: IntervalAudioEngineProtocol {
     /// Play an interval with the given number of semitones
     /// - Parameters:
     ///   - semitones: Number of semitones (e.g., 3 for minor third, 4 for major third)
+    ///   - rootNote: Optional MIDI note for the root (if nil, generates random)
     ///   - playMode: How to play the interval (harmonic = together, melodic = sequential)
     ///   - completion: Called when playback finishes
     func playInterval(
         semitones: Int,
+        rootNote: Int? = nil,
         playMode: IntervalPlayMode = .melodic,
         completion: (() -> Void)? = nil
     ) {
@@ -55,8 +57,13 @@ final class IntervalAudioEngine: IntervalAudioEngineProtocol {
 
         isPlaying = true
 
-        // Calculate frequencies
-        let rootFrequency = randomRootFrequency()
+        // Calculate frequencies - use provided root note or random
+        let rootFrequency: Float
+        if let midiNote = rootNote {
+            rootFrequency = frequencyForMidiNote(midiNote)
+        } else {
+            rootFrequency = randomRootFrequency()
+        }
         let intervalFrequency = frequencyForSemitones(semitones, from: rootFrequency)
 
         oscillator1?.frequency = rootFrequency
@@ -147,6 +154,13 @@ final class IntervalAudioEngine: IntervalAudioEngineProtocol {
     private func frequencyForSemitones(_ semitones: Int, from baseFreq: Float) -> Float {
         // f = f0 * 2^(n/12)
         return baseFreq * pow(2.0, Float(semitones) / 12.0)
+    }
+
+    /// Convert MIDI note number to frequency
+    private func frequencyForMidiNote(_ midiNote: Int) -> Float {
+        // A4 (MIDI 69) = 440 Hz
+        // f = 440 * 2^((n-69)/12)
+        return 440.0 * pow(2.0, Float(midiNote - 69) / 12.0)
     }
 }
 

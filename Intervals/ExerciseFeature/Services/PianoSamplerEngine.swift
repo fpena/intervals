@@ -73,10 +73,11 @@ final class PianoSamplerEngine: IntervalAudioEngineProtocol {
 
     func playInterval(
         semitones: Int,
+        rootNote: Int? = nil,
         playMode: IntervalPlayMode = .melodic,
         completion: (() -> Void)? = nil
     ) {
-        print("PianoSamplerEngine: playInterval called - semitones: \(semitones), mode: \(playMode)")
+        print("PianoSamplerEngine: playInterval called - semitones: \(semitones), rootNote: \(rootNote ?? -1), mode: \(playMode)")
 
         guard !isPlaying else {
             print("PianoSamplerEngine: Already playing, ignoring")
@@ -86,17 +87,17 @@ final class PianoSamplerEngine: IntervalAudioEngineProtocol {
 
         isPlaying = true
 
-        // Select random root note within comfortable range
-        let rootNote = randomRootNote(forInterval: semitones)
-        let intervalNote = rootNote + semitones
+        // Use provided root note or generate random one
+        let actualRootNote = rootNote ?? randomRootNote(forInterval: semitones)
+        let intervalNote = actualRootNote + semitones
 
         switch playMode {
         case .harmonic:
-            playHarmonic(rootNote: rootNote, intervalNote: intervalNote, completion: completion)
+            playHarmonic(rootNote: actualRootNote, intervalNote: intervalNote, completion: completion)
         case .melodic:
-            playMelodic(firstNote: rootNote, secondNote: intervalNote, completion: completion)
+            playMelodic(firstNote: actualRootNote, secondNote: intervalNote, completion: completion)
         case .melodicDescending:
-            playMelodic(firstNote: intervalNote, secondNote: rootNote, completion: completion)
+            playMelodic(firstNote: intervalNote, secondNote: actualRootNote, completion: completion)
         }
     }
 

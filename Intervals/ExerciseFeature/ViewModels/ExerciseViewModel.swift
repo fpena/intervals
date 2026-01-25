@@ -126,7 +126,7 @@ final class ExerciseViewModel {
 
         // Use intervalType for AudioKit tone generation
         if let intervalType = question.intervalType {
-            audioManager.playInterval(intervalType, playMode: .melodic) { [weak self] in
+            audioManager.playInterval(intervalType, rootNote: question.rootNote, playMode: .melodic) { [weak self] in
                 Task { @MainActor in
                     self?.audioDidFinish()
                 }

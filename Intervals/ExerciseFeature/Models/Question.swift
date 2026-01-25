@@ -11,19 +11,27 @@ struct Question: Identifiable {
     let correctAnswer: String
     let allAnswers: [String]
     let intervalType: IntervalType?
+    let rootNote: Int  // MIDI note number for consistent playback
+
+    // Range for random root note selection (C3 to C5)
+    private static let rootNoteRangeLow = 48   // C3
+    private static let rootNoteRangeHigh = 72  // C5
+    private static let highestMidiNote = 108   // C8
 
     init(
         id: UUID = UUID(),
         type: ExerciseType,
         correctAnswer: String,
         allAnswers: [String],
-        intervalType: IntervalType? = nil
+        intervalType: IntervalType? = nil,
+        rootNote: Int? = nil
     ) {
         self.id = id
         self.type = type
         self.correctAnswer = correctAnswer
         self.allAnswers = allAnswers
         self.intervalType = intervalType
+        self.rootNote = rootNote ?? Self.generateRootNote(for: intervalType?.semitones ?? 0)
     }
 
     /// Convenience initializer for interval questions
@@ -36,10 +44,19 @@ struct Question: Identifiable {
         self.type = .intervals
         self.correctAnswer = intervalType.displayName
         self.intervalType = intervalType
+        self.rootNote = Self.generateRootNote(for: intervalType.semitones)
 
         var answers = distractors.map { $0.displayName }
         answers.append(intervalType.displayName)
         self.allAnswers = answers.shuffled()
+    }
+
+    /// Generate a random root note that keeps the interval within valid range
+    private static func generateRootNote(for semitones: Int) -> Int {
+        let maxRoot = min(rootNoteRangeHigh, highestMidiNote - semitones)
+        let minRoot = rootNoteRangeLow
+        guard maxRoot >= minRoot else { return rootNoteRangeLow }
+        return Int.random(in: minRoot...maxRoot)
     }
 }
 
