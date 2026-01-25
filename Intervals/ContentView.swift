@@ -46,7 +46,7 @@ struct ContentView: View {
 
                 // Action
                 NavigationLink {
-                    ExerciseView()
+                    ComposerListView()
                 } label: {
                     Text("Start Practice")
                         .font(.headline)
