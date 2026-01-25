@@ -8,7 +8,7 @@ import AVFoundation
 import Foundation
 
 @MainActor
-final class IntervalAudioEngine {
+final class IntervalAudioEngine: IntervalAudioEngineProtocol {
     static let shared = IntervalAudioEngine()
 
     private let engine = AudioEngine()

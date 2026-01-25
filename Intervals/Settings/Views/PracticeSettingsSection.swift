@@ -148,6 +148,7 @@ struct InstrumentPicker: View {
                         isSelected: selectedInstrument == instrument,
                         onTap: {
                             selectedInstrument = instrument
+                            AudioManager.shared.selectedInstrument = instrument
                         }
                     )
                 }

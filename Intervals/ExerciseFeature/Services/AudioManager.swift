@@ -12,13 +12,33 @@ final class AudioManager: ObservableObject {
     static let shared = AudioManager()
 
     @Published private(set) var isPlaying = false
+    @Published var selectedInstrument: InstrumentType = .piano {
+        didSet {
+            if oldValue != selectedInstrument {
+                updateEngine()
+            }
+        }
+    }
 
-    private let intervalEngine = IntervalAudioEngine.shared
+    private var currentEngine: IntervalAudioEngineProtocol
     private var player: AVAudioPlayer?
     private var playbackCompletion: (() -> Void)?
 
     private init() {
+        currentEngine = AudioEngineFactory.engine(for: .piano)
         configureAudioSession()
+    }
+
+    private func updateEngine() {
+        print("AudioManager: Updating engine for \(selectedInstrument)")
+        currentEngine.stop()
+        currentEngine = AudioEngineFactory.engine(for: selectedInstrument)
+    }
+
+    /// Sync the audio engine with a user's preferred instrument
+    func syncInstrument(with userProfile: UserProfile) {
+        print("AudioManager: Syncing instrument to \(userProfile.preferredInstrument)")
+        selectedInstrument = userProfile.preferredInstrument
     }
 
     private func configureAudioSession() {
@@ -47,7 +67,7 @@ final class AudioManager: ObservableObject {
         isPlaying = true
         playbackCompletion = completion
 
-        intervalEngine.playInterval(semitones: semitones, playMode: playMode) { [weak self] in
+        currentEngine.playInterval(semitones: semitones, playMode: playMode) { [weak self] in
             Task { @MainActor in
                 self?.isPlaying = false
                 self?.playbackCompletion?()
@@ -95,7 +115,7 @@ final class AudioManager: ObservableObject {
     }
 
     func stop() {
-        intervalEngine.stop()
+        currentEngine.stop()
         player?.stop()
         isPlaying = false
     }

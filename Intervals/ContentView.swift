@@ -81,6 +81,9 @@ struct ContentView: View {
             .sheet(isPresented: $showSettings) {
                 SettingsView(user: currentUser)
             }
+            .onAppear {
+                AudioManager.shared.syncInstrument(with: currentUser)
+            }
         }
     }
 }
