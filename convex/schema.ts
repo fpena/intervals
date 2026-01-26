@@ -2,6 +2,17 @@ import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 
 export default defineSchema({
+  chapters: defineTable({
+    description: v.string(),
+    isActive: v.boolean(),
+    isBossChapter: v.boolean(),
+    name: v.string(),
+    sortOrder: v.float64(),
+    trackId: v.id("composers"),
+    unlockXpThreshold: v.float64(),
+  })
+    .index("by_track", ["trackId", "sortOrder"])
+    .index("by_active", ["isActive", "sortOrder"]),
   composers: defineTable({
     accessTier: v.string(),
     birthYear: v.float64(),

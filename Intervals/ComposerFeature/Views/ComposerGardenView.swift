@@ -7,18 +7,25 @@
 
 import SwiftUI
 
-/// The garden view for a specific composer - contains mini games
+/// The garden view for a specific composer - contains chapters
 struct ComposerGardenView: View {
     let composer: Composer
 
+    @StateObject private var composerService = ComposerService.shared
+    @State private var chapters: [Chapter] = []
+    @State private var isLoadingChapters = true
+
+    // TODO: Replace with actual user XP from user profile
+    private let userXp: Double = 0
+
     var body: some View {
         ScrollView {
-            VStack(spacing: 24) {
+            VStack(spacing: Spacing.lg) {
                 // Composer Header
                 composerHeader
 
-                // Mini Games Section
-                miniGamesSection
+                // Chapters Section
+                chaptersSection
             }
             .padding()
         }
@@ -34,12 +41,21 @@ struct ComposerGardenView: View {
         )
         .navigationTitle("\(composer.childFriendlyName)'s Garden")
         .navigationBarTitleDisplayMode(.inline)
+        .task {
+            await loadChapters()
+        }
+    }
+
+    private func loadChapters() async {
+        isLoadingChapters = true
+        chapters = await composerService.fetchChapters(forComposerId: composer.id)
+        isLoadingChapters = false
     }
 
     // MARK: - Composer Header
 
     private var composerHeader: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: Spacing.md) {
             // Avatar
             ZStack {
                 Circle()
@@ -57,7 +73,7 @@ struct ComposerGardenView: View {
                     .foregroundColor(.white)
             }
 
-            VStack(spacing: 4) {
+            VStack(spacing: Spacing.xxs) {
                 Text(composer.name)
                     .font(.title2)
                     .fontWeight(.bold)
@@ -70,99 +86,109 @@ struct ComposerGardenView: View {
                     .font(.body)
                     .foregroundColor(.secondary)
                     .multilineTextAlignment(.center)
-                    .padding(.top, 4)
+                    .padding(.top, Spacing.xxs)
             }
         }
         .padding()
         .frame(maxWidth: .infinity)
         .background(Color(.systemBackground))
-        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .clipShape(RoundedRectangle(cornerRadius: CornerRadius.lg))
     }
 
-    // MARK: - Mini Games Section
+    // MARK: - Chapters Section
 
-    private var miniGamesSection: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Text("Musical Games")
+    private var chaptersSection: some View {
+        VStack(alignment: .leading, spacing: Spacing.md) {
+            Text("Chapters")
                 .font(.headline)
                 .padding(.horizontal)
 
-            LazyVGrid(
-                columns: [
-                    GridItem(.flexible(), spacing: 16),
-                    GridItem(.flexible(), spacing: 16)
-                ],
-                spacing: 16
-            ) {
-                MiniGameCard(
-                    title: "Intervals",
-                    icon: "music.note.list",
+            if isLoadingChapters {
+                ChapterGridSkeleton()
+            } else if chapters.isEmpty {
+                emptyChaptersView
+            } else {
+                chapterGrid
+            }
+        }
+    }
+
+    private var emptyChaptersView: some View {
+        VStack(spacing: Spacing.md) {
+            Image(systemName: "book.closed")
+                .font(.system(size: 40))
+                .foregroundColor(.secondary)
+
+            Text("No chapters available yet")
+                .font(.subheadline)
+                .foregroundColor(.secondary)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, Spacing.xxl)
+    }
+
+    private var chapterGrid: some View {
+        LazyVGrid(
+            columns: [
+                GridItem(.flexible(), spacing: Spacing.md),
+                GridItem(.flexible(), spacing: Spacing.md)
+            ],
+            spacing: Spacing.md
+        ) {
+            ForEach(chapters) { chapter in
+                ChapterCard(
+                    chapter: chapter,
                     color: composer.primaryColor,
-                    isLocked: false
+                    isUnlocked: chapter.isUnlocked(userXp: userXp)
                 ) {
-                    // Navigate to interval exercise
-                }
-
-                MiniGameCard(
-                    title: "Chords",
-                    icon: "pianokeys",
-                    color: composer.secondaryColor,
-                    isLocked: true
-                ) {
-                    // Navigate to chord exercise
-                }
-
-                MiniGameCard(
-                    title: "Melody",
-                    icon: "waveform",
-                    color: composer.primaryColor.opacity(0.8),
-                    isLocked: true
-                ) {
-                    // Navigate to melody exercise
-                }
-
-                MiniGameCard(
-                    title: "Rhythm",
-                    icon: "metronome",
-                    color: composer.secondaryColor.opacity(0.8),
-                    isLocked: true
-                ) {
-                    // Navigate to rhythm exercise
+                    // TODO: Navigate to chapter exercises
                 }
             }
         }
     }
 }
 
-// MARK: - Mini Game Card
+// MARK: - Chapter Card
 
-struct MiniGameCard: View {
-    let title: String
-    let icon: String
+struct ChapterCard: View {
+    let chapter: Chapter
     let color: Color
-    let isLocked: Bool
+    let isUnlocked: Bool
     let action: () -> Void
+
+    private var icon: String {
+        if chapter.isBossChapter {
+            return "star.fill"
+        }
+        return isUnlocked ? "book.fill" : "lock.fill"
+    }
 
     var body: some View {
         Button(action: action) {
-            VStack(spacing: 12) {
+            VStack(spacing: Spacing.sm) {
                 ZStack {
-                    RoundedRectangle(cornerRadius: 12)
-                        .fill(color.opacity(isLocked ? 0.3 : 1.0))
+                    RoundedRectangle(cornerRadius: CornerRadius.md)
+                        .fill(color.opacity(isUnlocked ? 1.0 : 0.3))
                         .frame(width: 60, height: 60)
 
-                    Image(systemName: isLocked ? "lock.fill" : icon)
+                    Image(systemName: icon)
                         .font(.title)
-                        .foregroundColor(isLocked ? .secondary : .white)
+                        .foregroundColor(isUnlocked ? .white : .secondary)
                 }
 
-                Text(title)
+                Text(chapter.name)
                     .font(.subheadline)
                     .fontWeight(.medium)
-                    .foregroundColor(isLocked ? .secondary : .primary)
+                    .foregroundColor(isUnlocked ? .primary : .secondary)
+                    .lineLimit(2)
+                    .multilineTextAlignment(.center)
 
-                if isLocked {
-                    Text("Coming Soon")
+                if chapter.isBossChapter {
+                    Text("Boss Chapter")
+                        .font(.caption2)
+                        .foregroundColor(.appAccent)
+                } else if !isUnlocked {
+                    Text("\(Int(chapter.unlockXpThreshold)) XP")
                         .font(.caption2)
                         .foregroundColor(.secondary)
                 }
@@ -170,10 +196,45 @@ struct MiniGameCard: View {
             .frame(maxWidth: .infinity)
             .padding()
             .background(Color(.systemBackground))
-            .clipShape(RoundedRectangle(cornerRadius: 16))
-            .opacity(isLocked ? 0.7 : 1.0)
+            .clipShape(RoundedRectangle(cornerRadius: CornerRadius.lg))
+            .shadow(Shadow.card)
+            .opacity(isUnlocked ? 1.0 : 0.7)
         }
-        .disabled(isLocked)
+        .disabled(!isUnlocked)
+    }
+}
+
+// MARK: - Chapter Grid Skeleton
+
+struct ChapterGridSkeleton: View {
+    var body: some View {
+        LazyVGrid(
+            columns: [
+                GridItem(.flexible(), spacing: Spacing.md),
+                GridItem(.flexible(), spacing: Spacing.md)
+            ],
+            spacing: Spacing.md
+        ) {
+            ForEach(0..<4, id: \.self) { _ in
+                ChapterCardSkeleton()
+            }
+        }
+    }
+}
+
+struct ChapterCardSkeleton: View {
+    var body: some View {
+        VStack(spacing: Spacing.sm) {
+            SkeletonShape(width: 60, height: 60, cornerRadius: CGFloat(CornerRadius.md))
+
+            SkeletonShape(width: 80, height: 14)
+
+            SkeletonShape(width: 50, height: 10)
+        }
+        .frame(maxWidth: .infinity)
+        .padding()
+        .background(Color(.systemBackground))
+        .clipShape(RoundedRectangle(cornerRadius: CornerRadius.lg))
     }
 }
 

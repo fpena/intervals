@@ -4,7 +4,10 @@
       "Bash(xcodebuild:*)",
       "Bash(xcrun simctl:*)",
       "Bash(ls:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(npx convex deploy)",
+      "Bash(npx convex dev:*)",
+      "Bash(npx convex deploy:*)"
     ],
     "deny": [],
     "ask": []

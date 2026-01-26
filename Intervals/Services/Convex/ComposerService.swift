@@ -66,6 +66,36 @@ class ComposerService: ObservableObject {
         }
     }
 
+    // MARK: - Chapter Methods
+
+    /// Fetch chapters for a specific composer
+    func fetchChapters(forComposerId composerId: String) async -> [Chapter] {
+        do {
+            let chapters: [Chapter] = try await client.query(
+                "chapters:listByComposer",
+                args: ["composerId": composerId]
+            )
+            return chapters.sorted { $0.sortOrder < $1.sortOrder }
+        } catch {
+            self.error = error
+            return []
+        }
+    }
+
+    /// Fetch a single chapter by ID
+    func fetchChapter(byId id: String) async -> Chapter? {
+        do {
+            let chapter: Chapter? = try await client.query(
+                "chapters:get",
+                args: ["id": id]
+            )
+            return chapter
+        } catch {
+            self.error = error
+            return nil
+        }
+    }
+
     func clearError() {
         error = nil
     }

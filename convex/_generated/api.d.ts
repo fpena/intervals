@@ -8,6 +8,7 @@
  * @module
  */
 
+import type * as chapters from "../chapters.js";
 import type * as composers from "../composers.js";
 
 import type {
@@ -17,6 +18,7 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  chapters: typeof chapters;
   composers: typeof composers;
 }>;
 
