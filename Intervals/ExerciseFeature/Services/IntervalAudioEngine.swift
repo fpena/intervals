@@ -142,6 +142,38 @@ final class IntervalAudioEngine: IntervalAudioEngineProtocol {
         isPlaying = false
     }
 
+    func playChord(notes: [Int], volume: Float, completion: (() -> Void)?) {
+        guard !isPlaying, notes.count >= 2 else {
+            completion?()
+            return
+        }
+
+        isPlaying = true
+
+        // Set volume (amplitude) based on the dynamic level
+        let amplitude = volume * 0.5  // Scale down to avoid clipping
+
+        // Use the first two notes for the oscillators
+        oscillator1?.frequency = frequencyForMidiNote(notes[0])
+        oscillator2?.frequency = frequencyForMidiNote(notes.count > 1 ? notes[1] : notes[0])
+        oscillator1?.amplitude = amplitude
+        oscillator2?.amplitude = amplitude
+
+        oscillator1?.start()
+        oscillator2?.start()
+
+        Task {
+            try? await Task.sleep(for: .seconds(2.0))
+            oscillator1?.stop()
+            oscillator2?.stop()
+            // Reset amplitude to default
+            oscillator1?.amplitude = 0.5
+            oscillator2?.amplitude = 0.5
+            isPlaying = false
+            completion?()
+        }
+    }
+
     /// Generate a random root frequency within a comfortable range (C3 to C5)
     private func randomRootFrequency() -> Float {
         // C3 = 130.81 Hz, C5 = 523.25 Hz

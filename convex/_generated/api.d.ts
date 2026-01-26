@@ -11,6 +11,7 @@
 import type * as chapters from "../chapters.js";
 import type * as composers from "../composers.js";
 import type * as exercises from "../exercises.js";
+import type * as userProgress from "../userProgress.js";
 
 import type {
   ApiFromModules,
@@ -22,6 +23,7 @@ declare const fullApi: ApiFromModules<{
   chapters: typeof chapters;
   composers: typeof composers;
   exercises: typeof exercises;
+  userProgress: typeof userProgress;
 }>;
 
 /**

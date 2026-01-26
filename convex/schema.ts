@@ -2,6 +2,47 @@ import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 
 export default defineSchema({
+  // User profiles (for family subscription support)
+  profiles: defineTable({
+    deviceId: v.string(), // Device that created this profile
+    name: v.string(),
+    avatarId: v.string(),
+    createdAt: v.float64(),
+    updatedAt: v.float64(),
+  })
+    .index("by_device", ["deviceId"]),
+
+  // User progress tracking (per profile)
+  userProgress: defineTable({
+    profileId: v.id("profiles"), // Links to profile
+    exerciseId: v.id("exercises"),
+    chapterId: v.id("chapters"),
+    bestScore: v.float64(),
+    bestStreak: v.float64(),
+    totalXpEarned: v.float64(),
+    completionCount: v.float64(),
+    attemptCount: v.float64(),
+    firstCompletedAt: v.float64(),
+    lastCompletedAt: v.float64(),
+    lastAttemptedAt: v.float64(),
+  })
+    .index("by_profile", ["profileId"])
+    .index("by_profile_exercise", ["profileId", "exerciseId"])
+    .index("by_profile_chapter", ["profileId", "chapterId"]),
+
+  // Aggregated user stats (per profile)
+  userStats: defineTable({
+    profileId: v.id("profiles"),
+    totalXp: v.float64(),
+    currentStreak: v.float64(),
+    longestStreak: v.float64(),
+    lastActivityAt: v.float64(),
+    exercisesCompleted: v.float64(),
+    createdAt: v.float64(),
+    updatedAt: v.float64(),
+  })
+    .index("by_profile", ["profileId"]),
+
   chapters: defineTable({
     description: v.string(),
     isActive: v.boolean(),

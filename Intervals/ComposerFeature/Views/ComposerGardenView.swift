@@ -12,12 +12,15 @@ struct ComposerGardenView: View {
     let composer: Composer
 
     @StateObject private var composerService = ComposerService.shared
+    @StateObject private var progressService = UserProgressService.shared
     @State private var chapters: [Chapter] = []
     @State private var isLoadingChapters = true
     @State private var selectedChapter: Chapter?
 
-    // TODO: Replace with actual user XP from user profile
-    private let userXp: Double = 0
+    /// User's total XP from Convex
+    private var userXp: Double {
+        Double(progressService.totalXP)
+    }
 
     var body: some View {
         ScrollView {

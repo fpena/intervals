@@ -165,6 +165,37 @@ final class PianoSamplerEngine: IntervalAudioEngineProtocol {
         isPlaying = false
     }
 
+    func playChord(notes: [Int], volume: Float, completion: (() -> Void)?) {
+        guard !isPlaying else {
+            completion?()
+            return
+        }
+
+        isPlaying = true
+        activePlayers.removeAll()
+
+        // Play all notes simultaneously with the specified volume
+        for note in notes {
+            if let player = player(for: note) {
+                player.volume = volume
+                activePlayers.append(player)
+                player.play()
+            }
+        }
+
+        Task {
+            // Let chord ring for a duration
+            try? await Task.sleep(for: .seconds(2.5))
+            stopAllNotes()
+            // Reset volumes back to default
+            for player in players.values {
+                player.volume = 1.0
+            }
+            isPlaying = false
+            completion?()
+        }
+    }
+
     /// Generate a random root note that keeps the interval within valid range
     private func randomRootNote(forInterval semitones: Int) -> Int {
         // Ensure the interval note stays within our sample range

@@ -19,6 +19,13 @@ protocol IntervalAudioEngineProtocol {
     ///   - completion: Called when playback finishes
     func playInterval(semitones: Int, rootNote: Int?, playMode: IntervalPlayMode, completion: (() -> Void)?)
 
+    /// Play a chord with multiple notes at a specified volume
+    /// - Parameters:
+    ///   - notes: Array of MIDI note numbers to play simultaneously
+    ///   - volume: Volume level from 0.0 to 1.0
+    ///   - completion: Called when playback finishes
+    func playChord(notes: [Int], volume: Float, completion: (() -> Void)?)
+
     /// Stop any currently playing audio
     func stop()
 }

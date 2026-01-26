@@ -3,7 +3,6 @@
 //  Intervals
 //
 
-import SwiftData
 import SwiftUI
 
 /// View that displays exercises for a specific chapter
@@ -12,18 +11,10 @@ struct ChapterExercisesView: View {
     let themeColor: Color
 
     @StateObject private var composerService = ComposerService.shared
+    @StateObject private var progressService = UserProgressService.shared
     @State private var exercises: [Exercise] = []
     @State private var isLoading = true
     @State private var selectedExercise: Exercise?
-    @State private var completedExerciseIds: Set<String> = []
-    @State private var exerciseStars: [String: Int] = [:]
-
-    @Environment(\.modelContext) private var modelContext
-    @Query private var users: [UserProfile]
-
-    private var currentUser: UserProfile? {
-        users.first
-    }
 
     var body: some View {
         ScrollView {
@@ -35,7 +26,7 @@ struct ChapterExercisesView: View {
                 } else if exercises.isEmpty {
                     emptyExercisesView
                 } else {
-                    exerciseList
+                    exerciseListContent
                 }
             }
             .padding()
@@ -45,10 +36,35 @@ struct ChapterExercisesView: View {
         .navigationBarTitleDisplayMode(.inline)
         .task {
             await loadExercises()
-            loadProgress()
+            await progressService.refreshChapterProgress(chapter.id)
+        }
+        .onAppear {
+            // Refresh progress when returning from an exercise
+            Task {
+                await progressService.refreshChapterProgress(chapter.id)
+            }
         }
         .navigationDestination(item: $selectedExercise) { exercise in
             exerciseView(for: exercise)
+        }
+    }
+
+    // Force view update when progress changes by accessing the published property
+    private var exerciseListContent: some View {
+        // Access exerciseProgress to create dependency for SwiftUI updates
+        let _ = progressService.exerciseProgress
+
+        return VStack(spacing: Spacing.md) {
+            ForEach(Array(exercises.enumerated()), id: \.element.id) { index, exercise in
+                ExerciseRow(
+                    exercise: exercise,
+                    index: index + 1,
+                    themeColor: themeColor,
+                    progressStatus: progressStatus(for: exercise)
+                ) {
+                    selectedExercise = exercise
+                }
+            }
         }
     }
 
@@ -57,6 +73,14 @@ struct ChapterExercisesView: View {
         switch exercise.exerciseTypeSlug {
         case "pitch_direction":
             PitchDirectionExerciseView(
+                exercise: exercise,
+                themeColor: themeColor,
+                onComplete: { result in
+                    handleExerciseCompletion(result)
+                }
+            )
+        case "dynamics":
+            DynamicsExerciseView(
                 exercise: exercise,
                 themeColor: themeColor,
                 onComplete: { result in
@@ -77,59 +101,22 @@ struct ChapterExercisesView: View {
         isLoading = false
     }
 
-    private func loadProgress() {
-        guard let user = currentUser else { return }
-
-        completedExerciseIds = Set(
-            user.completedExercises
-                .filter { $0.chapterId == chapter.id && $0.completionCount > 0 }
-                .map { $0.exerciseId }
-        )
-
-        exerciseStars = Dictionary(
-            uniqueKeysWithValues: user.completedExercises
-                .filter { $0.chapterId == chapter.id }
-                .map { ($0.exerciseId, $0.starRating) }
-        )
-    }
-
     private func handleExerciseCompletion(_ result: ExerciseResult) {
-        guard let user = currentUser else { return }
-
-        let progressService = ExerciseProgressService(modelContext: modelContext)
-        progressService.recordCompletion(
-            user: user,
-            exerciseId: result.exerciseId,
-            chapterId: result.chapterId,
-            score: result.score,
-            streak: result.streak,
-            xpEarned: result.xpEarned,
-            passingScore: Int(exercises.first { $0.id == result.exerciseId }?.passingScorePercent ?? 60)
-        )
-
-        // Update local state
-        if result.passed {
-            completedExerciseIds.insert(result.exerciseId)
-            let currentStars = exerciseStars[result.exerciseId] ?? 0
-            let newStars = starRating(for: result.score)
-            if newStars > currentStars {
-                exerciseStars[result.exerciseId] = newStars
-            }
-        }
-    }
-
-    private func starRating(for score: Int) -> Int {
-        switch score {
-        case 90...100: return 3
-        case 70..<90: return 2
-        case 50..<70: return 1
-        default: return 0
+        Task {
+            await progressService.recordCompletion(
+                exerciseId: result.exerciseId,
+                chapterId: result.chapterId,
+                score: result.score,
+                streak: result.streak,
+                xpEarned: result.xpEarned,
+                passed: result.passed
+            )
         }
     }
 
     private func progressStatus(for exercise: Exercise) -> ExerciseProgressStatus {
-        if completedExerciseIds.contains(exercise.id) {
-            return .completed(stars: exerciseStars[exercise.id] ?? 0)
+        if progressService.isExerciseCompleted(exercise.id) {
+            return .completed(stars: progressService.getStarRating(for: exercise.id))
         }
         return .notStarted
     }

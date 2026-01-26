@@ -36,6 +36,9 @@ struct DynamicsConfig: Codable {
     let recognitionMode: String  // "static" or "change"
     let allowedDynamics: [String]  // ["f", "mf", "p"] or ["crescendo", "diminuendo"]
     let numQuestions: Int
+    let chordType: String?  // Optional: "major", "minor", etc.
+    let noteRangeLow: String?  // Optional: e.g., "C3"
+    let noteRangeHigh: String?  // Optional: e.g., "C5"
 
     static func parse(from jsonString: String) -> DynamicsConfig? {
         guard let data = jsonString.data(using: .utf8) else { return nil }
@@ -44,8 +47,11 @@ struct DynamicsConfig: Codable {
 
     static let defaultConfig = DynamicsConfig(
         recognitionMode: "static",
-        allowedDynamics: ["f", "p"],
-        numQuestions: 5
+        allowedDynamics: ["pp", "p", "mp", "mf", "f", "ff"],
+        numQuestions: 5,
+        chordType: "major",
+        noteRangeLow: "C3",
+        noteRangeHigh: "C5"
     )
 }
 

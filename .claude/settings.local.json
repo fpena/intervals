@@ -7,7 +7,8 @@
       "Bash(find:*)",
       "Bash(npx convex deploy)",
       "Bash(npx convex dev:*)",
-      "Bash(npx convex deploy:*)"
+      "Bash(npx convex deploy:*)",
+      "Bash(grep:*)"
     ],
     "deny": [],
     "ask": []

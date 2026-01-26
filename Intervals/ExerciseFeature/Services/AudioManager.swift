@@ -87,6 +87,25 @@ final class AudioManager: ObservableObject {
         playInterval(semitones: intervalType.semitones, rootNote: rootNote, playMode: playMode, completion: completion)
     }
 
+    /// Play a chord at a specified volume for dynamics exercises
+    /// - Parameters:
+    ///   - notes: Array of MIDI note numbers to play simultaneously
+    ///   - volume: Volume level from 0.0 to 1.0
+    ///   - completion: Called when playback completes
+    func playChord(notes: [Int], volume: Float, completion: (() -> Void)? = nil) {
+        guard !isPlaying else { return }
+
+        isPlaying = true
+        playbackCompletion = completion
+
+        currentEngine.playChord(notes: notes, volume: volume) { [weak self] in
+            Task { @MainActor in
+                self?.isPlaying = false
+                self?.playbackCompletion?()
+            }
+        }
+    }
+
     /// Legacy method for file-based playback (kept for compatibility)
     func playAudioFile(_ audioFileName: String, completion: (() -> Void)? = nil) {
         playbackCompletion = completion
