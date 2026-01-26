@@ -14,6 +14,7 @@ struct ComposerGardenView: View {
     @StateObject private var composerService = ComposerService.shared
     @State private var chapters: [Chapter] = []
     @State private var isLoadingChapters = true
+    @State private var selectedChapter: Chapter?
 
     // TODO: Replace with actual user XP from user profile
     private let userXp: Double = 0
@@ -43,6 +44,9 @@ struct ComposerGardenView: View {
         .navigationBarTitleDisplayMode(.inline)
         .task {
             await loadChapters()
+        }
+        .navigationDestination(item: $selectedChapter) { chapter in
+            ChapterExercisesView(chapter: chapter, themeColor: composer.primaryColor)
         }
     }
 
@@ -141,7 +145,7 @@ struct ComposerGardenView: View {
                     color: composer.primaryColor,
                     isUnlocked: chapter.isUnlocked(userXp: userXp)
                 ) {
-                    // TODO: Navigate to chapter exercises
+                    selectedChapter = chapter
                 }
             }
         }
@@ -183,15 +187,20 @@ struct ChapterCard: View {
                     .lineLimit(2)
                     .multilineTextAlignment(.center)
 
-                if chapter.isBossChapter {
-                    Text("Boss Chapter")
-                        .font(.caption2)
-                        .foregroundColor(.appAccent)
-                } else if !isUnlocked {
-                    Text("\(Int(chapter.unlockXpThreshold)) XP")
-                        .font(.caption2)
-                        .foregroundColor(.secondary)
+                // Always reserve space for caption to maintain equal height
+                Group {
+                    if chapter.isBossChapter {
+                        Text("Boss Chapter")
+                            .foregroundColor(.appAccent)
+                    } else if !isUnlocked {
+                        Text("\(Int(chapter.unlockXpThreshold)) XP")
+                            .foregroundColor(.secondary)
+                    } else {
+                        Text(" ")
+                            .foregroundColor(.clear)
+                    }
                 }
+                .font(.caption2)
             }
             .frame(maxWidth: .infinity)
             .padding()

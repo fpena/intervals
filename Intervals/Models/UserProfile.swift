@@ -62,6 +62,9 @@ final class UserProfile {
     @Relationship(deleteRule: .cascade, inverse: \UnlockedAchievement.user)
     var achievements: [UnlockedAchievement] = []
 
+    @Relationship(deleteRule: .cascade, inverse: \CompletedExercise.user)
+    var completedExercises: [CompletedExercise] = []
+
     // MARK: - Initialization
     init(
         name: String = OnboardingDefaults.name,

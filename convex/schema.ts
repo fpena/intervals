@@ -33,4 +33,18 @@ export default defineSchema({
     .index("by_era", ["era"])
     .index("by_sort_order", ["sortOrder"])
     .index("by_active", ["isActive", "sortOrder"]),
+  exercises: defineTable({
+    chapterId: v.id("chapters"),
+    config: v.string(),
+    difficulty: v.float64(),
+    exerciseTypeSlug: v.string(),
+    instructions: v.string(),
+    isActive: v.boolean(),
+    name: v.string(),
+    passingScorePercent: v.float64(),
+    sortOrder: v.float64(),
+    xpReward: v.float64(),
+  })
+    .index("by_chapter", ["chapterId", "sortOrder"])
+    .index("by_active", ["isActive", "sortOrder"]),
 });

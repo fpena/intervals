@@ -5,7 +5,7 @@
 
 import Foundation
 
-struct Chapter: Identifiable, Codable, Equatable {
+struct Chapter: Identifiable, Codable, Hashable {
     let _id: String
     let name: String
     let description: String

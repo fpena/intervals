@@ -96,6 +96,22 @@ class ComposerService: ObservableObject {
         }
     }
 
+    // MARK: - Exercise Methods
+
+    /// Fetch exercises for a specific chapter
+    func fetchExercises(forChapterId chapterId: String) async -> [Exercise] {
+        do {
+            let exercises: [Exercise] = try await client.query(
+                "exercises:listByChapter",
+                args: ["chapterId": chapterId]
+            )
+            return exercises.sorted { $0.sortOrder < $1.sortOrder }
+        } catch {
+            self.error = error
+            return []
+        }
+    }
+
     func clearError() {
         error = nil
     }
