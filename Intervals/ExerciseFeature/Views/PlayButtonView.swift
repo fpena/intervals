@@ -37,7 +37,7 @@ struct PlayButtonView: View {
                         )
                     )
                     .frame(width: 80, height: 80)
-                    .shadow(color: .appPrimary.opacity(0.3), radius: 8, y: 4)
+                    .shadow(Shadow.colored(.appPrimary))
 
                 Image(systemName: isPlaying ? "pause.fill" : "play.fill")
                     .font(.system(size: 32, weight: .bold))

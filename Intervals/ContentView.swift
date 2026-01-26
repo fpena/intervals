@@ -25,11 +25,11 @@ struct ContentView: View {
 
     var body: some View {
         NavigationStack {
-            VStack(spacing: 32) {
+            VStack(spacing: Spacing.xl) {
                 Spacer()
 
                 // Branding
-                VStack(spacing: 16) {
+                VStack(spacing: Spacing.md) {
                     Image(systemName: "ear.fill")
                         .font(.system(size: 100))
                         .foregroundColor(.appPrimary)
@@ -59,12 +59,12 @@ struct ContentView: View {
                                 endPoint: .trailing
                             )
                         )
-                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                        .clipShape(RoundedRectangle(cornerRadius: CornerRadius.md))
                 }
 
                 Spacer()
             }
-            .padding(.horizontal, 48)
+            .padding(.horizontal, Spacing.xxl)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(Color(.systemGroupedBackground))
             .toolbar {

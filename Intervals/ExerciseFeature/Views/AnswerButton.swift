@@ -55,9 +55,9 @@ struct AnswerButton: View {
                 .frame(maxWidth: .infinity)
                 .frame(minHeight: 56)
                 .background(backgroundColor)
-                .clipShape(RoundedRectangle(cornerRadius: 12))
+                .clipShape(RoundedRectangle(cornerRadius: CornerRadius.md))
                 .overlay(
-                    RoundedRectangle(cornerRadius: 12)
+                    RoundedRectangle(cornerRadius: CornerRadius.md)
                         .stroke(borderColor, lineWidth: 2)
                 )
                 .scaleEffect(scaleEffect)

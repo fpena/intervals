@@ -13,11 +13,11 @@ struct ComposerListView: View {
 
     var body: some View {
         ScrollView {
-            VStack(spacing: 24) {
+            VStack(spacing: Spacing.lg) {
                 headerSection
 
                 if composerService.isLoading {
-                    loadingView
+                    ComposerGridSkeleton()
                 } else if composerService.composers.isEmpty {
                     emptyStateView
                 } else {
@@ -37,7 +37,7 @@ struct ComposerListView: View {
     // MARK: - Header Section
 
     private var headerSection: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: Spacing.xs) {
             Text("Explore Musical Gardens")
                 .font(.title2)
                 .fontWeight(.semibold)
@@ -50,25 +50,10 @@ struct ComposerListView: View {
         .padding(.top)
     }
 
-    // MARK: - Loading View
-
-    private var loadingView: some View {
-        VStack(spacing: 16) {
-            ProgressView()
-                .scaleEffect(1.5)
-
-            Text("Loading gardens...")
-                .font(.subheadline)
-                .foregroundColor(.secondary)
-        }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 60)
-    }
-
     // MARK: - Empty State
 
     private var emptyStateView: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: Spacing.md) {
             Image(systemName: "leaf.fill")
                 .font(.system(size: 48))
                 .foregroundColor(.secondary)
@@ -97,10 +82,10 @@ struct ComposerListView: View {
     private var composerGrid: some View {
         LazyVGrid(
             columns: [
-                GridItem(.flexible(), spacing: 16),
-                GridItem(.flexible(), spacing: 16)
+                GridItem(.flexible(), spacing: Spacing.md),
+                GridItem(.flexible(), spacing: Spacing.md)
             ],
-            spacing: 16
+            spacing: Spacing.md
         ) {
             ForEach(composerService.composers) { composer in
                 NavigationLink {
@@ -163,7 +148,7 @@ struct ComposerCardView: View {
             )
 
             // Content overlay
-            VStack(spacing: 8) {
+            VStack(spacing: Spacing.xs) {
                 Spacer()
 
                 Text(composer.childFriendlyName)
@@ -179,16 +164,16 @@ struct ComposerCardView: View {
                     .foregroundColor(.white.opacity(0.7))
 
                 // Access tier badge - always reserve space for consistent height
-                HStack(spacing: 4) {
+                HStack(spacing: Spacing.xxs) {
                     Image(systemName: "crown.fill")
                         .font(.caption2)
                     Text("Premium")
                         .font(.caption2)
                 }
-                .foregroundColor(.orange)
-                .padding(.horizontal, 8)
-                .padding(.vertical, 4)
-                .background(Color.orange.opacity(0.15))
+                .foregroundColor(.iconPremium)
+                .padding(.horizontal, Spacing.xs)
+                .padding(.vertical, Spacing.xxs)
+                .background(Color.iconPremium.opacity(0.15))
                 .clipShape(Capsule())
                 .opacity(composer.isFree ? 0 : 1)
             }
@@ -196,8 +181,8 @@ struct ComposerCardView: View {
         }
         .frame(maxWidth: .infinity)
         .frame(height: 200)
-        .clipShape(RoundedRectangle(cornerRadius: 16))
-        .shadow(color: .black.opacity(0.1), radius: 8, x: 0, y: 2)
+        .clipShape(RoundedRectangle(cornerRadius: CornerRadius.lg))
+        .shadow(Shadow.card)
     }
 }
 
